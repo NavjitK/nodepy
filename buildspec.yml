@@ -12,7 +12,7 @@ phases:
       
       # Ensure the latest code is pulled from the repository
       - git fetch --unshallow
-      
+
       # Get the list of files changed in the latest commit (compared to the last build or commit)
       - CHANGED_FILES=$(git diff --name-only $(git rev-parse HEAD^1) HEAD)
 
@@ -21,14 +21,14 @@ phases:
 
       # Check if any files in the Node.js directory were changed
       - |
-        if echo "$CHANGED_FILES" | grep -q "^nodejs"; then
+        if echo "$CHANGED_FILES" | grep -q "^nodejs-hello-world"; then
           echo "Node.js directory has changes. Running Node.js build...";
           RUN_NODEJS=true;
         fi
-        
+
       # Check if any files in the Python directory were changed
       - |
-        if echo "$CHANGED_FILES" | grep -q "^python="; then
+        if echo "$CHANGED_FILES" | grep -q "^python-hello-world"; then
           echo "Python directory has changes. Running Python build...";
           RUN_PYTHON=true;
         fi
@@ -41,7 +41,7 @@ phases:
       - |
         if [ "$RUN_NODEJS" = "true" ]; then
           echo "Building Node.js app...";
-          cd nodejs;
+          cd nodejs-hello-world;
           docker build -t nodejs-hello-world .;
         fi
 
@@ -49,10 +49,14 @@ phases:
       - |
         if [ "$RUN_PYTHON" = "true" ]; then
           echo "Building Python app...";
-          cd python;
+          cd python-hello-world;
           docker build -t python-hello-world .;
         fi
 
   post_build:
     commands:
       - echo Build completed.
+
+artifacts:
+  files:
+    - '**/*'
