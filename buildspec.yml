@@ -9,24 +9,21 @@ phases:
     commands:
       - echo "Checking the latest commit for changes in Node.js or Python directory..."
       
-      # Get the latest commit hash
-      - LATEST_COMMIT=$(git rev-parse HEAD)
-      
       # Get the list of files changed in the latest commit
-      - CHANGED_FILES=$(git diff-tree --no-commit-id --name-only -r $LATEST_COMMIT)
-      
+      - CHANGED_FILES=$(git diff --name-only HEAD~1 HEAD)
+
       # Check if any files in the Node.js directory were changed
       - |
-        if echo "$CHANGED_FILES" | grep -q "^nodejs"; then
+        if echo "$CHANGED_FILES" | grep -q "^nodejs-hello-world"; then
           echo "Node.js directory has changes. Running Node.js build...";
-          export RUN_NODEJS=true;
+          RUN_NODEJS=true;
         fi
         
       # Check if any files in the Python directory were changed
       - |
-        if echo "$CHANGED_FILES" | grep -q "^python"; then
+        if echo "$CHANGED_FILES" | grep -q "^python-hello-world"; then
           echo "Python directory has changes. Running Python build...";
-          export RUN_PYTHON=true;
+          RUN_PYTHON=true;
         fi
 
   build:
@@ -52,7 +49,3 @@ phases:
   post_build:
     commands:
       - echo Build completed.
-
-artifacts:
-  files:
-    - '**/*'
