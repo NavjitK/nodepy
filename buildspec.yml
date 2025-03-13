@@ -51,6 +51,67 @@
 
 
 
+# version: 0.2
+
+# env:
+#   shell: bash
+
+# phases:
+#   pre_build:
+#     commands:
+#       # Detect which service changed
+#       - |
+#         if git diff --name-only $CODEBUILD_RESOLVED_SOURCE_VERSION^1..$CODEBUILD_RESOLVED_SOURCE_VERSION | grep "^nodejs/"
+#         then
+#           echo "Node.js changes detected"
+#           export SERVICE_TYPE="nodejs"
+#           export SOURCE_PATH="nodejs"
+#         elif git diff --name-only $CODEBUILD_RESOLVED_SOURCE_VERSION^1..$CODEBUILD_RESOLVED_SOURCE_VERSION | grep "^python/"
+#         then
+#           echo "Python changes detected"
+#           export SERVICE_TYPE="python"
+#           export SOURCE_PATH="python"
+#         else
+#           echo "No relevant changes detected"
+#           exit 0
+#         fi
+#       - echo "Working on $SERVICE_TYPE service"
+#       - cd $SOURCE_PATH
+#       - ls -la
+
+#   build:
+#     commands:
+#       - echo Build started on `date`
+#       - |
+#         if [ "$SERVICE_TYPE" = "nodejs" ]; then
+#           echo "Building Node.js service..."
+#           npm install
+#           npm run build
+#           npm test
+#         elif [ "$SERVICE_TYPE" = "python" ]; then
+#           echo "Building Python service..."
+#           python -m pip install --upgrade pip
+#           pip install -r requirements.txt
+#           python -m pytest
+#         fi
+
+#   post_build:
+#     commands:
+#       - echo Build completed on `date`
+#       - |
+#         if [ "$SERVICE_TYPE" = "nodejs" ]; then
+#           echo "Node.js build artifacts:"
+#           ls -la dist/
+#         elif [ "$SERVICE_TYPE" = "python" ]; then
+#           echo "Python build artifacts:"
+#           ls -la build/
+#         fi
+
+# artifacts:
+#   files:
+#     - '**/*'
+#   base-directory: $SOURCE_PATH
+
 version: 0.2
 
 env:
@@ -61,18 +122,17 @@ phases:
     commands:
       # Detect which service changed
       - |
-        if git diff --name-only $CODEBUILD_RESOLVED_SOURCE_VERSION^1..$CODEBUILD_RESOLVED_SOURCE_VERSION | grep "^nodejs/"
-        then
-          echo "Node.js changes detected"
+        echo "Checking for changes in services..."
+        if [ -d "nodejs" ] && [ -n "$(ls -A nodejs)" ]; then
+          echo "Node.js service detected"
           export SERVICE_TYPE="nodejs"
           export SOURCE_PATH="nodejs"
-        elif git diff --name-only $CODEBUILD_RESOLVED_SOURCE_VERSION^1..$CODEBUILD_RESOLVED_SOURCE_VERSION | grep "^python/"
-        then
-          echo "Python changes detected"
+        elif [ -d "python" ] && [ -n "$(ls -A python)" ]; then
+          echo "Python service detected"
           export SERVICE_TYPE="python"
           export SOURCE_PATH="python"
         else
-          echo "No relevant changes detected"
+          echo "No services detected"
           exit 0
         fi
       - echo "Working on $SERVICE_TYPE service"
