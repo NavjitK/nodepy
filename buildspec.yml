@@ -1,50 +1,114 @@
+# version: 0.2
+
+# phases:
+#   install:
+#     commands:
+#       - echo Installing dependencies...
+      
+#   pre_build:
+#     commands:
+#       - echo Checking for changes in nodejs-hello-world or python-hello-world...
+#       # Check if there are changes in the Node.js directory
+#       - |
+#         if git diff --name-only $CODEBUILD_SRC_DIR | grep -q "^nodejs"; then
+#           echo "Node.js directory has changes. Running Node.js build...";
+#           export RUN_NODEJS=true;
+#         fi
+#       # Check if there are changes in the Python directory
+#       - |
+#         if git diff --name-only $CODEBUILD_SRC_DIR | grep -q "^python"; then
+#           echo "Python directory has changes. Running Python build...";
+#           export RUN_PYTHON=true;
+#         fi
+
+#   build:
+#     commands:
+#       - echo Starting build...
+      
+#       # If Node.js directory has changes, run the Node.js build steps
+#       - |
+#         if [ "$RUN_NODEJS" == "true" ]; then
+#           echo "Building Node.js app...";
+#           cd nodejs;
+#           docker build -t nodejs .;
+#         fi
+
+#       # If Python directory has changes, run the Python build steps
+#       - |
+#         if [ "$RUN_PYTHON" == "true" ]; then
+#           echo "Building Python app...";
+#           cd python;
+#           docker build -t python .;
+#         fi
+
+#   post_build:
+#     commands:
+#       - echo Build completed.
+
+# artifacts:
+#   files:
+#     - '**/*'
+
+
+
 version: 0.2
 
+env:
+  shell: bash
+
 phases:
-  install:
-    commands:
-      - echo Installing dependencies...
-      
   pre_build:
     commands:
-      - echo Checking for changes in nodejs-hello-world or python-hello-world...
-      # Check if there are changes in the Node.js directory
+      # Detect which service changed
       - |
-        if git diff --name-only $CODEBUILD_SRC_DIR | grep -q "^nodejs"; then
-          echo "Node.js directory has changes. Running Node.js build...";
-          export RUN_NODEJS=true;
+        if git diff --name-only $CODEBUILD_RESOLVED_SOURCE_VERSION^1..$CODEBUILD_RESOLVED_SOURCE_VERSION | grep "^nodejs/"
+        then
+          echo "Node.js changes detected"
+          export SERVICE_TYPE="nodejs"
+          export SOURCE_PATH="nodejs"
+        elif git diff --name-only $CODEBUILD_RESOLVED_SOURCE_VERSION^1..$CODEBUILD_RESOLVED_SOURCE_VERSION | grep "^python/"
+        then
+          echo "Python changes detected"
+          export SERVICE_TYPE="python"
+          export SOURCE_PATH="python"
+        else
+          echo "No relevant changes detected"
+          exit 0
         fi
-      # Check if there are changes in the Python directory
-      - |
-        if git diff --name-only $CODEBUILD_SRC_DIR | grep -q "^python"; then
-          echo "Python directory has changes. Running Python build...";
-          export RUN_PYTHON=true;
-        fi
+      - echo "Working on $SERVICE_TYPE service"
+      - cd $SOURCE_PATH
+      - ls -la
 
   build:
     commands:
-      - echo Starting build...
-      
-      # If Node.js directory has changes, run the Node.js build steps
+      - echo Build started on `date`
       - |
-        if [ "$RUN_NODEJS" == "true" ]; then
-          echo "Building Node.js app...";
-          cd nodejs;
-          docker build -t nodejs .;
-        fi
-
-      # If Python directory has changes, run the Python build steps
-      - |
-        if [ "$RUN_PYTHON" == "true" ]; then
-          echo "Building Python app...";
-          cd python;
-          docker build -t python .;
+        if [ "$SERVICE_TYPE" = "nodejs" ]; then
+          echo "Building Node.js service..."
+          npm install
+          npm run build
+          npm test
+        elif [ "$SERVICE_TYPE" = "python" ]; then
+          echo "Building Python service..."
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          python -m pytest
         fi
 
   post_build:
     commands:
-      - echo Build completed.
+      - echo Build completed on `date`
+      - |
+        if [ "$SERVICE_TYPE" = "nodejs" ]; then
+          echo "Node.js build artifacts:"
+          ls -la dist/
+        elif [ "$SERVICE_TYPE" = "python" ]; then
+          echo "Python build artifacts:"
+          ls -la build/
+        fi
 
 artifacts:
   files:
     - '**/*'
+  base-directory: $SOURCE_PATH
+
