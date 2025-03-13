@@ -3,7 +3,12 @@ version: 0.2
 phases:
   install:
     commands:
-      git clone https://github.com/NavjitK/nodepy.git /tmp/repo && cd /tmp/repo && node_commit=$(git log -1 --format="%ct" nodejs) && python_commit=$(git log -1 --format="%ct" python) && ls /tmp/repo/nodejs && ls /tmp/repo/python
+      - git clone https://github.com/NavjitK/nodepy.git /tmp/repo
+      - cd /tmp/repo
+      - node_commit=$(git log -1 --format="%ct" nodejs)
+      - python_commit=$(git log -1 --format="%ct" python)
+      - ls /tmp/repo/nodejs
+      - ls /tmp/repo/python
 
   build:
     commands:
