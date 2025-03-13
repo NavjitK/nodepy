@@ -2,8 +2,6 @@ version: 0.2
 
 phases:
   install:
-    runtime-versions:
-      docker: 18
     commands:
       # Clone the repository to get the latest changes
       echo "Cloning the repository to check for the latest commits"
