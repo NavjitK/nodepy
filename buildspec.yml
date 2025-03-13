@@ -17,14 +17,14 @@ phases:
       
       # Check if any files in the Node.js directory were changed
       - |
-        if echo "$CHANGED_FILES" | grep -q "^nodejs-hello-world"; then
+        if echo "$CHANGED_FILES" | grep -q "^nodejs"; then
           echo "Node.js directory has changes. Running Node.js build...";
           export RUN_NODEJS=true;
         fi
         
       # Check if any files in the Python directory were changed
       - |
-        if echo "$CHANGED_FILES" | grep -q "^python-hello-world"; then
+        if echo "$CHANGED_FILES" | grep -q "^python"; then
           echo "Python directory has changes. Running Python build...";
           export RUN_PYTHON=true;
         fi
