@@ -1,0 +1,17 @@
+# Use an official Node.js runtime as a parent image
+FROM node:16
+
+# Set the working directory in the container
+WORKDIR /usr/src/app
+
+# Copy the current directory contents into the container
+COPY . .
+
+# Install any needed dependencies (even though there are none here)
+RUN npm install
+
+# Make the port 8080 available to the world outside the container
+EXPOSE 8080
+
+# Define the command to run your app
+CMD [ "node", "index.js" ]
