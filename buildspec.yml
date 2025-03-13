@@ -4,13 +4,17 @@ phases:
   install:
     commands:
       - echo Installing dependencies...
+      - echo Ensuring the repository is fully cloned...
 
   pre_build:
     commands:
-      - echo "Checking the latest commit for changes in Node.js or Python directory..."
+      - echo "Fetching the latest changes..."
+      
+      # Ensure the latest code is pulled from the repository
+      - git fetch --all
       
       # Get the list of files changed in the latest commit
-      - CHANGED_FILES=$(git diff --name-only HEAD~1 HEAD)
+      - CHANGED_FILES=$(git diff --name-only HEAD^..HEAD)
 
       # Check if any files in the Node.js directory were changed
       - |
