@@ -3,24 +3,22 @@ version: 0.2
 phases:
   install:
     commands:
-      # Clone the repository to get the latest changes
       echo "Cloning the repository to check for the latest commits"
       git clone https://github.com/NavjitK/nodepy.git /tmp/repo
       cd /tmp/repo
       node_commit=$(git log -1 --format="%ct" nodejs)
+      echo "Node.js latest commit timestamp: $node_commit"
       python_commit=$(git log -1 --format="%ct" python)
+      echo "Python latest commit timestamp: $python_commit"
 
   build:
     commands:
-      # Compare the commit times and decide which folder to build
       if [ $node_commit -gt $python_commit ]; then
         echo "Building Node.js application"
-        cd /tmp/repo/nodejs
-        docker build -t nodejs-app -f Dockerfile-nodejs .
+        cd /tmp/repo/nodejs && docker build -t nodejs-app -f Dockerfile-nodejs . 
       else
         echo "Building Python application"
-        cd /tmp/repo/python
-        docker build -t python-app -f Dockerfile-python .
+        cd /tmp/repo/python && docker build -t python-app -f Dockerfile-python .
       fi
 
   post_build:
