@@ -1,79 +1,13 @@
-# version: 0.2
-
-# phases:
-#   install:
-#     commands:
-#       - echo Installing dependencies...
-#       - echo Ensuring the repository is fully cloned...
-      
-#   pre_build:
-#     commands:
-#       - echo "Fetching the latest changes..."
-      
-#       # Ensure the latest code is pulled from the repository
-#       - git fetch --unshallow
-
-#       # Get the list of files changed in the latest commit (compared to the last build or commit)
-#       - CHANGED_FILES=$(git diff --name-only $(git rev-parse HEAD^1) HEAD)
-
-#       # Debugging: Print the list of changed files
-#       - echo "Changed files: $CHANGED_FILES"
-
-#       # Check if any files in the Node.js directory were changed
-#       - |
-#         if echo "$CHANGED_FILES" | grep -q "^nodejs-hello-world"; then
-#           echo "Node.js directory has changes. Running Node.js build...";
-#           RUN_NODEJS=true;
-#         fi
-
-#       # Check if any files in the Python directory were changed
-#       - |
-#         if echo "$CHANGED_FILES" | grep -q "^python-hello-world"; then
-#           echo "Python directory has changes. Running Python build...";
-#           RUN_PYTHON=true;
-#         fi
-
-#   build:
-#     commands:
-#       - echo "Starting build..."
-      
-#       # If Node.js directory has changes, run the Node.js build steps
-#       - |
-#         if [ "$RUN_NODEJS" = "true" ]; then
-#           echo "Building Node.js app...";
-#           cd nodejs-hello-world;
-#           docker build -t nodejs-hello-world .;
-#         fi
-
-#       # If Python directory has changes, run the Python build steps
-#       - |
-#         if [ "$RUN_PYTHON" = "true" ]; then
-#           echo "Building Python app...";
-#           cd python-hello-world;
-#           docker build -t python-hello-world .;
-#         fi
-
-#   post_build:
-#     commands:
-#       - echo Build completed.
-
-# artifacts:
-#   files:
-#     - '**/*'
-
-
-
 version: 0.2
 
 phases:
   install:
     runtime-versions:
       docker: 18
-
     commands:
       # Clone the repository to get the latest changes
       echo "Cloning the repository to check for the latest commits"
-      git clone https://github.com/NavjitK/nodep.git /tmp/repo
+      git clone https://github.com/NavjitK/nodepy.git /tmp/repo
       cd /tmp/repo
       
       # Get the latest commit timestamp for the Node.js folder
@@ -104,4 +38,3 @@ phases:
       # aws ecr get-login-password --region your-region | docker login --username AWS --password-stdin <aws_account_id>.dkr.ecr.<region>.amazonaws.com
       # docker tag nodejs-app <aws_account_id>.dkr.ecr.<region>.amazonaws.com/your-repository:latest
       # docker push <aws_account_id>.dkr.ecr.<region>.amazonaws.com/your-repository:latest
-
