@@ -122,15 +122,17 @@ phases:
     commands:
       # Detect which service changed
       - |
-        echo "Checking for changes in services..."
+        echo "Checking for services..."
         if [ -d "nodejs" ] && [ -n "$(ls -A nodejs)" ]; then
           echo "Node.js service detected"
           export SERVICE_TYPE="nodejs"
           export SOURCE_PATH="nodejs"
+          export DOCKERFILE="Dockerfile-nodejs"
         elif [ -d "python" ] && [ -n "$(ls -A python)" ]; then
           echo "Python service detected"
           export SERVICE_TYPE="python"
           export SOURCE_PATH="python"
+          export DOCKERFILE="Dockerfile-python"
         else
           echo "No services detected"
           exit 0
@@ -144,15 +146,11 @@ phases:
       - echo Build started on `date`
       - |
         if [ "$SERVICE_TYPE" = "nodejs" ]; then
-          echo "Building Node.js service..."
-          npm install
-          npm run build
-          npm test
+          echo "Building Node.js service Docker image..."
+          docker build -t nodejs-app:latest -f $DOCKERFILE .
         elif [ "$SERVICE_TYPE" = "python" ]; then
-          echo "Building Python service..."
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-          python -m pytest
+          echo "Building Python service Docker image..."
+          docker build -t python-app:latest -f $DOCKERFILE .
         fi
 
   post_build:
@@ -160,15 +158,14 @@ phases:
       - echo Build completed on `date`
       - |
         if [ "$SERVICE_TYPE" = "nodejs" ]; then
-          echo "Node.js build artifacts:"
-          ls -la dist/
+          echo "Node.js Docker image built successfully"
+          docker images | grep nodejs-app
         elif [ "$SERVICE_TYPE" = "python" ]; then
-          echo "Python build artifacts:"
-          ls -la build/
+          echo "Python Docker image built successfully"
+          docker images | grep python-app
         fi
 
 artifacts:
   files:
     - '**/*'
   base-directory: $SOURCE_PATH
-
