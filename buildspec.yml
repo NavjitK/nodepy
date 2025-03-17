@@ -71,7 +71,7 @@ phases:
       - cd /tmp/repo
       - |
         # Ensure we are on the correct branch (you can adjust this if needed)
-        git fetch --all
+        git fetch --unshallow
         git status
         
         # Check if there are any changes in the 'nodejs' directory
