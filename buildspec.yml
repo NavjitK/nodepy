@@ -56,10 +56,8 @@ phases:
   build:
     commands:
       - echo Starting build...
-      
-      # If Node.js directory has changes, run the Node.js build steps
       - |
-        if "$RUN_NODEJS" == "true"; then
+        if [ "$RUN_NODEJS" == "true" ]; then
           echo "Building Node.js app...";
           cd nodejs;
           docker build -t nodejs .;
