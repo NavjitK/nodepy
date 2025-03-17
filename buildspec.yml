@@ -1,30 +1,82 @@
+# version: 0.2
+
+# phases:
+#   install:
+#     commands:
+#       - git clone https://github.com/NavjitK/nodepy.git /tmp/repo
+#       - cd /tmp/repo
+#       - node_commit=$(git log -1 --format="%ct" nodejs)
+#       - python_commit=$(git log -1 --format="%ct" python)
+#       - ls /tmp/repo/nodejs
+#       - ls /tmp/repo/python
+
+#   build:
+#     commands:
+#       - | 
+#         if [ $node_commit -gt $python_commit ]; then
+#           echo "Building Node.js application"
+#           cd /tmp/repo/nodejs && docker build -t nodejs-app -f Dockerfile-nodejs . 
+#         else
+#           echo "Building Python application"
+#           cd /tmp/repo/python && docker build -t python-app -f Dockerfile-python .
+#         fi
+
+#   post_build:
+#     commands:
+#       - echo "Build complete. The relevant Docker image has been built."
+#       # Optionally push the built image to a registry like ECR
+#       # aws ecr get-login-password --region your-region | docker login --username AWS --password-stdin <aws_account_id>.dkr.ecr.<region>.amazonaws.com
+#       # docker tag nodejs-app <aws_account_id>.dkr.ecr.<region>.amazonaws.com/your-repository:latest
+#       # docker push <aws_account_id>.dkr.ecr.<region>.amazonaws.com/your-repository:latest
+
+
 version: 0.2
 
 phases:
   install:
     commands:
-      - git clone https://github.com/NavjitK/nodepy.git /tmp/repo
-      - cd /tmp/repo
-      - node_commit=$(git log -1 --format="%ct" nodejs)
-      - python_commit=$(git log -1 --format="%ct" python)
-      - ls /tmp/repo/nodejs
-      - ls /tmp/repo/python
+      - echo Installing dependencies...
+      
+  pre_build:
+    commands:
+      - echo Checking for changes in nodejs-hello-world or python-hello-world...
+      # Check if there are changes in the Node.js directory
+      - |
+        if git diff --name-only $CODEBUILD_SRC_DIR | grep -q "^nodejs"; then
+          echo "Node.js directory has changes. Running Node.js build...";
+          export RUN_NODEJS=true;
+        fi
+      # Check if there are changes in the Python directory
+      - |
+        if git diff --name-only $CODEBUILD_SRC_DIR | grep -q "^python"; then
+          echo "Python directory has changes. Running Python build...";
+          export RUN_PYTHON=true;
+        fi
 
   build:
     commands:
-      - | 
-        if [ $node_commit -gt $python_commit ]; then
-          echo "Building Node.js application"
-          cd /tmp/repo/nodejs && docker build -t nodejs-app -f Dockerfile-nodejs . 
-        else
-          echo "Building Python application"
-          cd /tmp/repo/python && docker build -t python-app -f Dockerfile-python .
+      - echo Starting build...
+      
+      # If Node.js directory has changes, run the Node.js build steps
+      - |
+        if [ "$RUN_NODEJS" == "true" ]; then
+          echo "Building Node.js app...";
+          cd nodejs;
+          docker build -t nodejs .;
+        fi
+
+      # If Python directory has changes, run the Python build steps
+      - |
+        if [ "$RUN_PYTHON" == "true" ]; then
+          echo "Building Python app...";
+          cd python;
+          docker build -t python .;
         fi
 
   post_build:
     commands:
-      - echo "Build complete. The relevant Docker image has been built."
-      # Optionally push the built image to a registry like ECR
-      # aws ecr get-login-password --region your-region | docker login --username AWS --password-stdin <aws_account_id>.dkr.ecr.<region>.amazonaws.com
-      # docker tag nodejs-app <aws_account_id>.dkr.ecr.<region>.amazonaws.com/your-repository:latest
-      # docker push <aws_account_id>.dkr.ecr.<region>.amazonaws.com/your-repository:latest
+      - echo Build completed.
+
+artifacts:
+  files:
+    - '**/*'
