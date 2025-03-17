@@ -47,10 +47,10 @@ phases:
   build:
     commands:
       - |
-        if [ "$node_diff" == "nodejs changed" ]; then
+        if [ "$node_changed" -gt 0 ]; then
           echo "Building Node.js application"
           cd /tmp/repo/nodejs && docker build -t nodejs-app -f Dockerfile-nodejs . 
-        elif [ "$python_diff" == "python changed" ]; then
+        elif [ "$python_changed" -gt 0 ]; then
           echo "Building Python application"
           cd /tmp/repo/python && docker build -t python-app -f Dockerfile-python . 
         else
