@@ -41,17 +41,13 @@ phases:
     commands:
       - echo Checking for changes in nodejs-hello-world or python-hello-world...
       # Check if there are changes in the Node.js directory
-      - |
-        if git diff --name-only $CODEBUILD_SRC_DIR | grep -q "^nodejs"; then
-          echo "Node.js directory has changes. Running Node.js build...";
-          export RUN_NODEJS=true;
-        fi
-      # Check if there are changes in the Python directory
-      - |
-        if git diff --name-only $CODEBUILD_SRC_DIR | grep -q "^python"; then
-          echo "Python directory has changes. Running Python build...";
-          export RUN_PYTHON=true;
-        fi
+      - | 
+          if git diff --name-only HEAD^ HEAD | grep -q '^nodejs/'; then
+            export REPO_TYPE="nodejs"
+          elif git diff --name-only HEAD^ HEAD | grep -q '^python/'; then
+            export REPO_TYPE="python"
+          fi
+      - echo "REPO_TYPE is set to $REPO_TYPE"
 
   build:
     commands:
