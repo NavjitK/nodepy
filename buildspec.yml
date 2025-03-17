@@ -1,67 +1,3 @@
-# version: 0.2
-
-# phases:
-#   install:
-#     commands:
-#       - git clone https://github.com/NavjitK/nodepy.git /tmp/repo
-#       - cd /tmp/repo
-#       - node_commit=$(git log -1 --format="%ct" nodejs)
-#       - python_commit=$(git log -1 --format="%ct" python)
-#       - ls /tmp/repo/nodejs
-#       - ls /tmp/repo/python
-
-#   build:
-#     commands:
-#       - | 
-#         if [ $node_commit -gt $python_commit ]; then
-#           echo "Building Node.js application"
-#           cd /tmp/repo/nodejs && docker build -t nodejs-app -f Dockerfile-nodejs . 
-#         else
-#           echo "Building Python application"
-#           cd /tmp/repo/python && docker build -t python-app -f Dockerfile-python .
-#         fi
-
-#   post_build:
-#     commands:
-#       - echo "Build complete. The relevant Docker image has been built."
-#       # Optionally push the built image to a registry like ECR
-#       # aws ecr get-login-password --region your-region | docker login --username AWS --password-stdin <aws_account_id>.dkr.ecr.<region>.amazonaws.com
-#       # docker tag nodejs-app <aws_account_id>.dkr.ecr.<region>.amazonaws.com/your-repository:latest
-#       # docker push <aws_account_id>.dkr.ecr.<region>.amazonaws.com/your-repository:latest
-
-
-# version: 0.2
-
-# phases:
-#   install:
-#     commands:
-#       - git clone https://github.com/NavjitK/nodepy.git /tmp/repo
-#       - cd /tmp/repo
-#       - |
-#         # Compare the 'nodejs' and 'python' directories to check for changes
-#         node_diff=$(git diff --quiet nodejs || echo "nodejs changed")
-#         python_diff=$(git diff --quiet python || echo "python changed")
-#         echo "Node.js changes: $node_diff"
-#         echo "Python changes: $python_diff"
-
-#   build:
-#     commands:
-#       - |
-#         if [ "$node_diff" = "nodejs changed" ]; then
-#           echo "Building Node.js application"
-#           cd /tmp/repo/nodejs && docker build -t nodejs-app -f Dockerfile-nodejs . 
-#         elif [ "$python_diff" = "python changed" ]; then
-#           echo "Building Python application"
-#           cd /tmp/repo/python && docker build -t python-app -f Dockerfile-python . 
-#         else
-#           echo "No changes detected in either Node.js or Python. Skipping build."
-#         fi
-
-#   post_build:
-#     commands:
-#       - echo "Build complete. The relevant Docker image has been built."
-
-
 version: 0.2
 
 phases:
@@ -69,35 +5,26 @@ phases:
     commands:
       - git clone https://github.com/NavjitK/nodepy.git /tmp/repo
       - cd /tmp/repo
-      - |
-        # Ensure we are on the correct branch (you can adjust this if needed)
-        git fetch --unshallow
-        git status
-        
-        # Check if there are any changes in the 'nodejs' directory
-        node_diff=$(git diff --quiet HEAD nodejs && echo "no nodejs changes" || echo "nodejs changed")
-        # Check if there are any changes in the 'python' directory
-        python_diff=$(git diff --quiet HEAD python && echo "no python changes" || echo "python changed")
-        
-        echo "Node.js changes: $node_diff"
-        echo "Python changes: $python_diff"
+      - node_commit=$(git log -1 --format="%ct" nodejs)
+      - python_commit=$(git log -1 --format="%ct" python)
+      - ls /tmp/repo/nodejs
+      - ls /tmp/repo/python
 
   build:
     commands:
-      - |
-        # If nodejs directory has changes, build the Node.js app
-        if [ "$node_diff" = "nodejs changed" ]; then
+      - | 
+        if [ $node_commit -gt $python_commit ]; then
           echo "Building Node.js application"
           cd /tmp/repo/nodejs && docker build -t nodejs-app -f Dockerfile-nodejs . 
-        # If python directory has changes, build the Python app
-        elif [ "$python_diff" = "python changed" ]; then
-          echo "Building Python application"
-          cd /tmp/repo/python && docker build -t python-app -f Dockerfile-python . 
         else
-          echo "No changes detected in either Node.js or Python. Skipping build."
+          echo "Building Python application"
+          cd /tmp/repo/python && docker build -t python-app -f Dockerfile-python .
         fi
 
   post_build:
     commands:
       - echo "Build complete. The relevant Docker image has been built."
-
+      # Optionally push the built image to a registry like ECR
+      # aws ecr get-login-password --region your-region | docker login --username AWS --password-stdin <aws_account_id>.dkr.ecr.<region>.amazonaws.com
+      # docker tag nodejs-app <aws_account_id>.dkr.ecr.<region>.amazonaws.com/your-repository:latest
+      # docker push <aws_account_id>.dkr.ecr.<region>.amazonaws.com/your-repository:latest
