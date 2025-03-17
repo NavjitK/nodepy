@@ -64,7 +64,7 @@ phases:
           cd nodejs;
           docker build -t nodejs .;
         fi
-
+      
       # If Python directory has changes, run the Python build steps
       - |
         if [ "$RUN_PYTHON" == "true" ]; then
