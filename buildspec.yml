@@ -72,6 +72,7 @@ phases:
       - |
         # Ensure we are on the correct branch (you can adjust this if needed)
         git fetch --all
+        git status
         
         # Check if there are any changes in the 'nodejs' directory
         node_diff=$(git diff --quiet HEAD nodejs && echo "no nodejs changes" || echo "nodejs changed")
