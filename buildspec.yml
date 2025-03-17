@@ -63,12 +63,14 @@ phases:
           echo "Building Node.js app...";
           cd nodejs;
           docker build -t nodejs .;
-        elif [ "$RUN_PYTHON" == "true" ]; then
-          echo "Building Python app...";
-          cd python;
-          docker build -t python .;
         else
-          echo ("no change")
+          if [ "$RUN_PYTHON" == "true" ]; then
+            echo "Building Python app...";
+            cd python;
+            docker build -t python .;
+          else
+            echo "No changes detected in Node.js or Python directories.";
+          fi
         fi
 
   post_build:
