@@ -35,45 +35,28 @@ version: 0.2
 phases:
   install:
     commands:
-      - echo Installing dependencies...
-      
-  pre_build:
-    commands:
-      - echo Checking for changes in nodejs-hello-world or python-hello-world...
-      - changed_files=$(git diff --name-only HEAD^ HEAD)
-
-
-      # Check if there are changes in the Node.js directory
-      - | 
-          if echo "$changed_files" | grep -q '^nodejs/'; then
-            export REPO_TYPE="nodejs"
-          elif echo "$changed_files" | grep -q '^python/'; then
-            export REPO_TYPE="python"
-          fi
-      - echo "REPO_TYPE is set to $REPO_TYPE"
+      - git clone https://github.com/NavjitK/nodepy.git /tmp/repo
+      - cd /tmp/repo
+      - |
+        # Compare the 'nodejs' and 'python' directories to check for changes
+        node_diff=$(git diff --quiet nodejs || echo "nodejs changed")
+        python_diff=$(git diff --quiet python || echo "python changed")
+        echo "Node.js changes: $node_diff"
+        echo "Python changes: $python_diff"
 
   build:
     commands:
-      - echo Starting build...
       - |
-        if [ "$RUN_NODEJS" == "true" ]; then
-          echo "Building Node.js app...";
-          cd nodejs;
-          docker build -t nodejs .;
+        if [[ "$node_diff" == "nodejs changed" ]]; then
+          echo "Building Node.js application"
+          cd /tmp/repo/nodejs && docker build -t nodejs-app -f Dockerfile-nodejs . 
+        elif [[ "$python_diff" == "python changed" ]]; then
+          echo "Building Python application"
+          cd /tmp/repo/python && docker build -t python-app -f Dockerfile-python . 
         else
-          if [ "$RUN_PYTHON" == "true" ]; then
-            echo "Building Python app...";
-            cd python;
-            docker build -t python .;
-          else
-            echo "No changes detected in Node.js or Python directories.";
-          fi
+          echo "No changes detected in either Node.js or Python. Skipping build."
         fi
 
   post_build:
     commands:
-      - echo Build completed.
-
-artifacts:
-  files:
-    - '**/*'
+      - echo "Build complete. The relevant Docker image has been built."
